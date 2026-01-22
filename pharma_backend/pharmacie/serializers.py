@@ -6,4 +6,4 @@ class PharmacySerializer(serializers.ModelSerializer):
     class Meta:
         model = Pharmacy
         fields = '__all__'
-        read_only_fields = ['user']
+        read_only_fields = ['user', 'status', 'is_active']

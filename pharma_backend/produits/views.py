@@ -9,9 +9,12 @@ class ProductViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsPharmacyOwner]
 
     def get_queryset(self):
-        if self.request.user.role == 'ADMIN':
+        user = self.request.user
+        if user.role == 'ADMIN':
             return Product.objects.all()
-        return Product.objects.filter(pharmacy__user=self.request.user)
+        if user.role == 'CLIENT':
+            return Product.objects.filter(pharmacy__status='APPROVED', pharmacy__is_active=True)
+        return Product.objects.filter(pharmacy__user=user)
 
     def perform_create(self, serializer):
         serializer.save(pharmacy=self.request.user.pharmacy)

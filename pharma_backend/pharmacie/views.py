@@ -1,4 +1,6 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import Pharmacy
 from .serializers import PharmacySerializer
@@ -10,10 +12,38 @@ class PharmacyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsPharmacyOwnerOrAdmin]
 
     def get_queryset(self):
-        # Les pharmacies voient seulement leurs propres pharmacies
-        if self.request.user.role == 'ADMIN':
+        user = self.request.user
+        if user.role == 'ADMIN':
             return Pharmacy.objects.all()
-        return Pharmacy.objects.filter(user=self.request.user)
+        # Clients can see all APPROVED and active pharmacies
+        if user.role == 'CLIENT':
+            return Pharmacy.objects.filter(status='APPROVED', is_active=True)
+        # Pharmacists see their own
+        return Pharmacy.objects.filter(user=user)
 
     def perform_create(self, serializer):
+        # When user creates, it defaults to PENDING (model default)
+        # User is assigned automatically.
         serializer.save(user=self.request.user)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def approve(self, request, pk=None):
+        if request.user.role != 'ADMIN':
+            return Response({'error': 'Only admins can approve.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        pharmacy = self.get_object()
+        pharmacy.status = 'APPROVED'
+        pharmacy.is_active = True
+        pharmacy.save()
+        return Response({'status': 'Pharmacy approved'})
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def reject(self, request, pk=None):
+        if request.user.role != 'ADMIN':
+            return Response({'error': 'Only admins can approve/reject.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        pharmacy = self.get_object()
+        pharmacy.status = 'REJECTED'
+        pharmacy.is_active = False
+        pharmacy.save()
+        return Response({'status': 'Pharmacy rejected'})
