@@ -12,6 +12,7 @@ class Product(models.Model):
     stock = models.IntegerField()
     category = models.CharField(max_length=100)
     image = models.ImageField(upload_to='product/', null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     requires_prescription = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 

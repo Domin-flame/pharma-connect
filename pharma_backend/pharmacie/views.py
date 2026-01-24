@@ -13,13 +13,22 @@ class PharmacyViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        queryset = Pharmacy.objects.all()
+        
+        name = self.request.query_params.get('name')
+        if name:
+            queryset = queryset.filter(name__icontains=name)
+
+        if user.is_anonymous:
+            return queryset.filter(status='APPROVED', is_active=True)
+            
         if user.role == 'ADMIN':
-            return Pharmacy.objects.all()
+            return queryset
         # Clients can see all APPROVED and active pharmacies
         if user.role == 'CLIENT':
-            return Pharmacy.objects.filter(status='APPROVED', is_active=True)
+            return queryset.filter(status='APPROVED', is_active=True)
         # Pharmacists see their own
-        return Pharmacy.objects.filter(user=user)
+        return queryset.filter(user=user)
 
     def perform_create(self, serializer):
         # When user creates, it defaults to PENDING (model default)

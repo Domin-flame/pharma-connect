@@ -13,19 +13,21 @@ from rest_framework_simplejwt.views import (
 # Import des viewsets
 from produits.views import ProductViewSet
 from pharmacie.views import PharmacyViewSet
+from commandes.views import OrderViewSet
 
 # Création du router pour les ViewSets
 router = DefaultRouter()
 router.register(r'produits', ProductViewSet, basename='products')
 router.register(r'pharmacie', PharmacyViewSet, basename='pharmacies')
+router.register(r'commandes', OrderViewSet, basename='commandes')
 
 urlpatterns = [
     # Admin Django
     path('admin/', admin.site.urls),
 
     # JWT
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/', TokenObtainPairView.as_view()),
+    path('api/token/refresh/', TokenRefreshView.as_view()),
 
     # API ViewSets
     path('api/', include(router.urls)),

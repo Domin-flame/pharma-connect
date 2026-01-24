@@ -1,86 +1,178 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { authService } from '../services/api';
+import { motion } from 'framer-motion';
+import { LogIn, UserPlus, AlertCircle } from 'lucide-react';
 
-export default function Login(): React.ReactElement {
-    const navigate = useNavigate();
-    const [email, setEmail] = React.useState('');
-    const [password, setPassword] = React.useState('');
+const Login = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setError(null);
-        if (!email || !password) {
-            setError('Veuillez renseigner l\'email et le mot de passe.');
-            return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await authService.login({ username, password });
+      localStorage.setItem('access_token', response.data.access);
+      localStorage.setItem('refresh_token', response.data.refresh);
+      navigate('/');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err.response?.data?.detail || 'Identifiants invalides. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-page">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="auth-card glass"
+      >
+        <div className="auth-header">
+          <div className="auth-icon"><LogIn size={32} /></div>
+          <h2>Connexion</h2>
+          <p>Heureux de vous revoir !</p>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          {error && (
+            <div className="auth-error">
+              <AlertCircle size={18} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <div className="input-group">
+            <label>Nom d'utilisateur</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              placeholder="votre_nom"
+            />
+          </div>
+
+          <div className="input-group">
+            <label>Mot de passe</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="btn btn-primary btn-full"
+            disabled={loading}
+          >
+            {loading ? 'Connexion...' : 'Se connecter'}
+          </button>
+        </form>
+
+        <div className="auth-footer">
+          <p>Pas encore de compte ? <Link to="/register">S'inscrire</Link></p>
+        </div>
+      </motion.div>
+
+      <style>{`
+        .auth-page {
+          min-height: calc(100vh - 130px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 40px 20px;
+          background: radial-gradient(circle at top right, rgba(0, 206, 138, 0.05), transparent),
+                      radial-gradient(circle at bottom left, rgba(26, 43, 75, 0.05), transparent);
         }
 
-        setLoading(true);
-        // simple mock auth: accept any non-empty credentials
-        setTimeout(() => {
-            setLoading(false);
-            navigate('/');
-        }, 500);
-    };
+        .auth-card {
+          width: 100%;
+          max-width: 450px;
+          padding: 40px;
+          border-radius: 24px;
+          box-shadow: var(--shadow-lg);
+        }
 
-    const [loading, setLoading] = React.useState(false);
-    const [error, setError] = React.useState<string | null>(null);
+        .auth-header {
+          text-align: center;
+          margin-bottom: 30px;
+        }
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-blue-50 px-4">
-            <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Connexion</h1>
-                <p className="text-gray-600 mb-8">Connectez-vous à votre compte</p>
+        .auth-header h2 {
+          font-size: 2rem;
+          margin: 15px 0 5px;
+        }
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="votre@email.com"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        />
-                    </div>
+        .auth-header p {
+          color: var(--text-muted);
+        }
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Mot de passe</label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="••••••••"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        />
-                    </div>
+        .auth-icon {
+          width: 64px;
+          height: 64px;
+          background: rgba(0, 206, 138, 0.1);
+          color: var(--primary);
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto;
+        }
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 font-medium disabled:opacity-60"
-                    >
-                        {loading ? 'Connexion...' : 'Se connecter'}
-                    </button>
-                </form>
+        .input-group label {
+          display: block;
+          margin-bottom: 8px;
+          font-weight: 600;
+          font-size: 0.9rem;
+          color: var(--secondary);
+        }
 
-                <div className="mt-6 text-center">
-                    <p className="text-gray-600"> Pas encore de compte ?{' '}
-                        <button onClick={() => navigate('/register')} className="text-emerald-600 hover:underline font-medium"> S'inscrire </button>
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
-}
+        .btn-full {
+          width: 100%;
+          justify-content: center;
+          padding: 14px;
+          margin-top: 10px;
+          font-size: 1.1rem;
+        }
 
+        .auth-footer {
+          margin-top: 25px;
+          text-align: center;
+          font-size: 0.95rem;
+        }
 
+        .auth-footer a {
+          color: var(--primary);
+          text-decoration: none;
+          font-weight: 600;
+        }
 
+        .auth-error {
+          background: rgba(255, 107, 107, 0.1);
+          color: var(--accent);
+          padding: 12px;
+          border-radius: 8px;
+          margin-bottom: 20px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 0.9rem;
+        }
+      `}</style>
+    </div>
+  );
+};
 
- 
-
-
-
-
-
-
+export default Login;

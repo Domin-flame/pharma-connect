@@ -1,67 +1,44 @@
-import axios, {
-  AxiosError,
-  AxiosInstance,
-  AxiosRequestConfig,
-} from 'axios'
+import axios, { AxiosResponse } from 'axios';
+import { AuthResponse, Pharmacy, Product, User } from '../types';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+const api = axios.create({
+    baseURL: '/api',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
 
-interface RetryRequestConfig extends AxiosRequestConfig {
-  _retry?: boolean
-}
-
-const api: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
-
-/* Request interceptor */
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
-  if (token && config.headers) {
-    config.headers.Authorization = Bearer ${token}
-  }
-  return config
-})
-
-/* Response interceptor */
-api.interceptors.response.use(
-  (response) => response,
-  async (error: AxiosError) => {
-    const originalRequest = error.config as RetryRequestConfig
-
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry
-    ) {
-      originalRequest._retry = true
-
-      try {
-        const refreshToken = localStorage.getItem('refresh_token')
-
-        const { data } = await axios.post(${API_BASE_URL}/auth/token/refresh/, {
-          refresh: refreshToken,
-        })
-
-        localStorage.setItem('access_token', data.access)
-
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = Bearer ${data.access}
+// Add a request interceptor to add the JWT token to headers if it exists
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
         }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
-        return api(originalRequest)
-      } catch {
-        localStorage.clear()
-        window.location.href = '/login'
-      }
-    }
+export const authService = {
+    login: (credentials: any): Promise<AxiosResponse<AuthResponse>> => api.post('/token/', credentials),
+    register: (userData: any): Promise<AxiosResponse<User>> => api.post('/users/register/', userData),
+    refresh: (): Promise<AxiosResponse<AuthResponse>> => api.post('/token/refresh/', { refresh: localStorage.getItem('refresh_token') }),
+};
 
-    return Promise.reject(error)
-  }
-)
+export const pharmacyService = {
+    getPharmacies: (params?: any): Promise<AxiosResponse<Pharmacy[]>> => api.get('/pharmacie/', { params }),
+    getPharmacy: (id: string): Promise<AxiosResponse<Pharmacy>> => api.get(`/pharmacie/${id}/`),
+};
 
-export default api
+export const productService = {
+    getProducts: (params?: any): Promise<AxiosResponse<Product[]>> => api.get('/produits/', { params }),
+    getProduct: (id: string): Promise<AxiosResponse<Product>> => api.get(`/produits/${id}/`),
+};
+
+export const orderService = {
+    getOrders: (): Promise<AxiosResponse<any[]>> => api.get('/commandes/'),
+    createOrder: (orderData: any): Promise<AxiosResponse<any>> => api.post('/commandes/', orderData),
+};
+
+export default api;
