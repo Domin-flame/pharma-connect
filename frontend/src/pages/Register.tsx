@@ -96,6 +96,28 @@ const Register = () => {
                     </div>
 
                     <div className="input-group">
+                        <label>Type de compte</label>
+                        <div className="role-selector">
+                            <button
+                                type="button"
+                                className={`role-option ${formData.role === 'CLIENT' ? 'active' : ''}`}
+                                onClick={() => setFormData({ ...formData, role: 'CLIENT' })}
+                            >
+                                <User size={24} />
+                                <span>Client</span>
+                            </button>
+                            <button
+                                type="button"
+                                className={`role-option ${formData.role === 'PHARMACY' ? 'active' : ''}`}
+                                onClick={() => setFormData({ ...formData, role: 'PHARMACY' })}
+                            >
+                                <Building size={24} />
+                                <span>Pharmacie</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="input-group">
                         <label>Mot de passe</label>
                         <input
                             type="password"
@@ -136,6 +158,42 @@ const Register = () => {
         }
         .text-center {
           text-align: center;
+        }
+        
+        .role-selector {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+        
+        .role-option {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          padding: 20px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 2px solid rgba(255, 255, 255, 0.2);
+          border-radius: 12px;
+          color: rgba(255, 255, 255, 0.7);
+          cursor: pointer;
+          transition: all 0.3s;
+        }
+        
+        .role-option:hover {
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(0, 206, 138, 0.5);
+        }
+        
+        .role-option.active {
+          background: rgba(0, 206, 138, 0.15);
+          border-color: rgba(0, 206, 138, 0.8);
+          color: #00ce8a;
+        }
+        
+        .role-option span {
+          font-weight: 600;
+          font-size: 0.9rem;
         }
       `}</style>
         </div>

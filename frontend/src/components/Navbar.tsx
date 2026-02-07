@@ -26,6 +26,7 @@ const Navbar = () => {
                     {isLoggedIn ? (
                         <>
                             <li><Link to="/orders">Mes Commandes</Link></li>
+                            <li><Link to="/dashboard">Tableau de Bord</Link></li>
                             <li>
                                 <button onClick={handleLogout} className="btn-logout" aria-label="Déconnexion">
                                     <LogOut size={20} />

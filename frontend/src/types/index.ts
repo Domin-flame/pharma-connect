@@ -7,12 +7,20 @@ export interface User {
 export interface Pharmacy {
     id: number;
     nom: string;
+    name: string;
     adresse: string;
+    address: string;
+    city: string;
     description?: string;
     latitude?: number;
     longitude?: number;
     telephone?: string;
+    phone?: string;
+    email?: string;
     horaires?: string;
+    status?: string;
+    is_active?: boolean;
+    user?: number;
 }
 
 export interface Product {

@@ -7,26 +7,35 @@ import Register from './pages/Register';
 import Search from './pages/Search';
 import PharmacyDetail from './pages/PharmacyDetail';
 import Orders from './pages/Orders';
+import PharmacistDashboard from './pages/dashboard/PharmacistDashboard';
 
 function App() {
     return (
         <Router>
-            <div className="app-container">
-                <Navbar />
-                <main className="main-content">
-                    <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
-                        <Route path="/search" element={<Search />} />
-                        <Route path="/pharmacy/:id" element={<PharmacyDetail />} />
-                        <Route path="/orders" element={<Orders />} />
-                    </Routes>
-                </main>
-                <footer className="footer">
-                    <p>&copy; 2026 PharmaConnect. Tous droits réservés.</p>
-                </footer>
-            </div>
+            <Routes>
+                {/* Dashboard route (no navbar/footer) */}
+                <Route path="/dashboard/*" element={<PharmacistDashboard />} />
+                
+                {/* Main app routes (with navbar/footer) */}
+                <Route path="/*" element={
+                    <div className="app-container">
+                        <Navbar />
+                        <main className="main-content">
+                            <Routes>
+                                <Route path="/" element={<Home />} />
+                                <Route path="/login" element={<Login />} />
+                                <Route path="/register" element={<Register />} />
+                                <Route path="/search" element={<Search />} />
+                                <Route path="/pharmacy/:id" element={<PharmacyDetail />} />
+                                <Route path="/orders" element={<Orders />} />
+                            </Routes>
+                        </main>
+                        <footer className="footer">
+                            <p>&copy; 2026 PharmaConnect. Tous droits réservés.</p>
+                        </footer>
+                    </div>
+                } />
+            </Routes>
         </Router>
     );
 }

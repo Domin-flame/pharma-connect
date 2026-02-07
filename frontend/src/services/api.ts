@@ -29,6 +29,10 @@ export const authService = {
 export const pharmacyService = {
     getPharmacies: (params?: any): Promise<AxiosResponse<Pharmacy[]>> => api.get('/pharmacie/', { params }),
     getPharmacy: (id: string): Promise<AxiosResponse<Pharmacy>> => api.get(`/pharmacie/${id}/`),
+    getMyPharmacy: (): Promise<AxiosResponse<Pharmacy[]>> => api.get('/pharmacie/'),
+    createPharmacy: (data: any): Promise<AxiosResponse<Pharmacy>> => api.post('/pharmacie/', data),
+    updatePharmacy: (id: number, data: any): Promise<AxiosResponse<Pharmacy>> => api.put(`/pharmacie/${id}/`, data),
+    patchPharmacy: (id: number, data: any): Promise<AxiosResponse<Pharmacy>> => api.patch(`/pharmacie/${id}/`, data),
 };
 
 export const productService = {
